@@ -10,23 +10,31 @@ const jwt = require("jsonwebtoken");
 router.post("/login",async(req,res)=>{
     try{
         let body = req.body;
-        // console.log(body);
+        // console.log(body.password);
         const data = await UserModel.findOne({email:body.email});
-        const match = await bcrypt.compare(body.password,data.password);
-        if(match){
-            let token = jwt.sign({
-                data:{userName:data.userName,id:data.id}
-            },key,{expiresIn:"1h"});
-            res.json({
-                status:"Success",
-                userName:data.userName,
-                token:token
-            })
+        if(data){
+            const match = await bcrypt.compare(body.password,data.password);
 
+            if(match){
+                let token = jwt.sign({
+                    data:{userName:data.userName,id:data.id}
+                },key,{expiresIn:"1h"});
+                res.json({
+                    status:"Success",
+                    userName:data.userName,
+                    token:token
+                })
+                
+            }else{
+                res.status(406).json({
+                    status:"failed",
+                    message:"match failed"
+                })
+            }
         }else{
             res.status(406).json({
-            status:"failed",
-            message:"match failed"
+                status:"failed",
+                message:"invalid"
             })
         }
 
